@@ -1,0 +1,22 @@
+{
+  "delivery-planner": {
+    "description": "Read-only planning specialist. Use first to map code paths, acceptance criteria, risks, and tests before any edits.",
+    "readonly": true
+  },
+  "delivery-tech-lead": {
+    "description": "Read-only technical lead. Challenge plans, question decisions and complexity, and align tests and implementation before coding.",
+    "readonly": true
+  },
+  "delivery-tester": {
+    "description": "Test-first specialist. Use after approval to write and run behavioral tests, without changing production code.",
+    "readonly": false
+  },
+  "delivery-implementer": {
+    "description": "Implementation specialist. Use after tests are written to make minimal production changes and resolve actionable review findings.",
+    "readonly": false
+  },
+  "delivery-reviewer": {
+    "description": "Independent read-only code reviewer. Use after validation to review the diff, risks, and missing test coverage.",
+    "readonly": true
+  }
+}
