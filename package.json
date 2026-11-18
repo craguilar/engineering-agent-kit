@@ -1,20 +1,25 @@
 {
   "name": "engineering-agent-kit",
   "version": "0.1.0",
-  "private": true,
-  "description": "Install the software-delivery skill and native agents for Codex, Claude Code, and Cursor",
+  "description": "Shared software-delivery skill and native subagents for Codex, Claude Code, and Cursor",
   "type": "module",
   "bin": {
-    "engineering-agent-kit": "bin/install.mjs"
-  },
-  "engines": {
-    "node": ">=18"
+    "engineering-agent-kit": "bin/engineering-agent-kit.mjs"
   },
   "files": [
     "bin/",
-    "scripts/",
-    "agents/",
-    "skills/",
-    "adapters/"
-  ]
+    "adapters/",
+    "skills/"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tests/npx-installer.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craguilar/engineering-agent-kit.git"
+  },
+  "license": "Apache-2.0"
 }

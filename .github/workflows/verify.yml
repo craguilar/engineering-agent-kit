@@ -10,17 +10,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python3 scripts/render_adapters.py --check
-      - run: python3 -m unittest discover -s tests -v
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: python3 scripts/render_adapters.py --check
+      - run: python3 -m unittest discover -s tests -v
+      - run: npm test
       - name: Verify npm package contents
         run: |
           npm pack --dry-run --json > pack.json
-          node -e "const p=require('./pack.json')[0].files.map(f=>f.path);for(const f of ['bin/install.mjs','scripts/install.py','scripts/kit.py','skills/software-delivery/SKILL.md','agents/roles.json'])if(!p.includes(f))throw Error('Missing '+f)"
-      - name: Smoke test no-clone CLI
+          node -e "const p=require('./pack.json')[0].files.map(f=>f.path);for(const f of ['bin/engineering-agent-kit.mjs','skills/software-delivery/SKILL.md','adapters/codex/agents/delivery-planner.toml','adapters/claude/agents/delivery-planner.md','adapters/cursor/agents/delivery-planner.md'])if(!p.includes(f))throw Error('Missing '+f)"
+      - name: Smoke test Node-only installer
         run: |
-          node bin/install.mjs --scope global --home "$RUNNER_TEMP/eak-test" --dry-run
-          node bin/install.mjs --scope global --home "$RUNNER_TEMP/eak-test"
-          node bin/install.mjs --scope global --home "$RUNNER_TEMP/eak-test" --verify
+          node bin/engineering-agent-kit.mjs --scope global --home "$RUNNER_TEMP/eak-test" --dry-run
+          node bin/engineering-agent-kit.mjs --scope global --home "$RUNNER_TEMP/eak-test"
+          node bin/engineering-agent-kit.mjs --scope global --home "$RUNNER_TEMP/eak-test" --verify

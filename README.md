@@ -1,66 +1,64 @@
 # Engineering Agent Kit
 
-**One reusable software-delivery workflow for Codex CLI, Claude Code, and Cursor.**
+**One reusable development workflow for Codex CLI, Claude Code, and Cursor.**
 
-Install it once to get the `software-delivery` skill **and five specialized agents**. Use them to plan, test, implement, validate, and review changes in your projects.
+Install the `software-delivery` skill **and all five native agents** with one command. No manual clone or Python setup required.
 
-## Quick start — no clone required
+## Quick start
 
-**Requirements:** Node.js 18+, Python 3.11+, Git, and at least one of Codex CLI, Claude Code, or Cursor.
+### 1. Install for every local project
 
-### 1. Install the complete kit
-
-Run **one command** in PowerShell, macOS Terminal, or Linux:
+**Requires Node.js 20+ and Git** (plus Codex CLI, Claude Code, and/or Cursor). The command works in PowerShell, macOS, and Linux:
 
 ```bash
 npx -y github:craguilar/engineering-agent-kit --scope global
 ```
 
-This downloads the kit for the installer, then installs the **software-delivery skill and all five native agents** for Codex, Claude Code, and Cursor. You do **not** need to clone the repository or install any Python dependencies.
-
-Check the installation:
+Verify the installation:
 
 ```bash
 npx -y github:craguilar/engineering-agent-kit --scope global --verify
 ```
 
-For a safer preview before installing:
+This installs the **skill and five native agents** for Codex, Claude Code, and Cursor. `npx` retrieves the kit from GitHub automatically; you do not need to clone it or install Python.
+
+Preview changes without writing files:
 
 ```bash
 npx -y github:craguilar/engineering-agent-kit --scope global --dry-run
 ```
 
-**Only want the skill?** The Skills CLI can install just the skill, but it does **not** install this kit's native agent definitions:
+**Skill only:** If you do not need the five native subagents, use the Skills CLI instead:
 
 ```bash
 npx -y skills add craguilar/engineering-agent-kit --skill software-delivery -a codex -a claude-code -a cursor -g -y
 ```
 
+That separate command installs the shared skill, **not** the native agent definitions.
+
 ### 2. Use it in any project
 
-Open your project's folder and start a **new** Codex, Claude Code, or Cursor Agent session.
+Open your project's directory and **start a new session** with your preferred assistant:
 
-| Tool | How to start |
+| Tool | Start |
 | --- | --- |
-| Codex CLI | Run `codex` in your project |
-| Claude Code | Run `claude` in your project |
+| Codex CLI | `codex` |
+| Claude Code | `claude` |
 | Cursor | Open the project and start an Agent chat |
 
-Then ask:
+Then request:
 
 ```text
-Use the software-delivery skill and its delivery agents to
-implement <your feature or bug fix>.
-
-Plan first, write tests, implement, run validation, and
-perform an independent review. Do not push or merge.
+Use the software-delivery skill and the delivery agents to implement
+<your feature or bug fix>. Plan first, add tests, implement,
+run validation, and get an independent review. Do not push or merge.
 ```
 
-In Claude Code you can also invoke `/software-delivery` directly. In Cursor, use that command if available or mention the skill by name.
+Claude Code also supports `/software-delivery` to invoke the skill explicitly. In Cursor, use `/software-delivery` if available or mention its name; in Codex, mention the skill and the `delivery-*` agents.
 
-## How it works
+## How the workflow works
 
-The coding assistant acts as the **orchestrator** and delegates each phase to a specialized agent.
+The assistant acts as the orchestrator, calling specialized agents in order:
 
 ```mermaid
 flowchart TD
@@ -78,48 +76,51 @@ flowchart TD
     D -->|After 2 repair cycles| E["Report unresolved issues"]
 ```
 
-The tester and implementer edit files **sequentially**. The planner, tech lead, and reviewer are intended to work without modifying code. The reviewer gets a fresh context. The workflow stops after two repair cycles and never pushes or merges without approval.
+Only the tester and implementer should modify files, **one at a time**. The planner, tech lead, and independent reviewer should not edit code. The workflow stops after two repair iterations and never pushes or merges without approval.
 
-## Using it across projects
+## Share it across projects and teams
 
-**Global installation** makes the skill and agents available to all projects on *your machine*:
+The global installation makes the skill and agents available in *all local projects on your computer*:
 
 ```mermaid
 flowchart TB
-    K["engineering-agent-kit<br/>Single source of truth"] --> X["Global installer"]
-    X --> C["Codex CLI<br/>Skill + native agents"]
-    X --> A["Claude Code<br/>Skill + native agents"]
-    X --> R["Cursor<br/>Skill + native agents"]
+    K["engineering-agent-kit<br/>Single source of truth"] --> X["One-command installer"]
+    X --> C["Codex CLI<br/>Skill + agents"]
+    X --> A["Claude Code<br/>Skill + agents"]
+    X --> R["Cursor<br/>Skill + agents"]
     C --> P["Any local project"]
     A --> P
     R --> P
 ```
 
-For **team repositories, CI, or cloud agents**, install directly into the project's folder (run from the target project):
+For **team projects and cloud/CI agents**, install into the current project directory instead:
 
 ```bash
+cd path/to/your-project
 npx -y github:craguilar/engineering-agent-kit --scope project --project .
 npx -y github:craguilar/engineering-agent-kit --scope project --project . --verify
 ```
 
-This writes the skill and agent files into the project's `.agents/`, `.codex/`, `.claude/`, and `.cursor/` folders. It does **not** overwrite the project's `AGENTS.md` or `CLAUDE.md`.
+Commit the installed `.agents/`, `.codex/`, `.claude/`, and `.cursor/` directories to share the workflow with your team. Existing project instructions (`AGENTS.md` and `CLAUDE.md`) are not changed.
 
-## Useful commands
+## Manage the installation
 
-Append any of these flags to the `npx` installer command:
+Use the same `npx -y github:craguilar/engineering-agent-kit` prefix with these options:
 
-| Option | Purpose |
+| Option | What it does |
 | --- | --- |
-| `--agents codex` | Install only for Codex; also supports `claude` and `cursor` |
-| `--dry-run` | Preview changes |
-| `--verify` | Confirm installed files match |
-| `--force` | Back up and replace conflicting files |
+| `--scope global` | Install for all projects on this computer (default) |
+| `--scope project --project .` | Install into the current project |
+| `--agents codex` | Install only Codex (or `claude`, `cursor`, or combinations) |
+| `--dry-run` | Preview changes without writing anything |
+| `--verify` | Check installed files |
+| `--force` | Back up and replace changed installed files |
 
-For example: `npx -y github:craguilar/engineering-agent-kit --scope global --agents codex claude --dry-run`.
+To update: rerun the install command. If it reports different existing files, review them with `--dry-run`, then use `--force` to back up and replace them. To pin a reproducible version in CI, use a Git commit or tag suffix such as `#<commit-sha>` on the GitHub package specifier.
 
-### Alternative: install from a local checkout
+### Alternative: work from a local checkout
 
-If you're developing the kit or prefer not to use `npx`, clone it and use the existing installer:
+If you are contributing to the kit or prefer its Python installer:
 
 ```bash
 git clone https://github.com/craguilar/engineering-agent-kit.git
@@ -127,22 +128,18 @@ cd engineering-agent-kit
 python3 scripts/install.py --scope global
 ```
 
-On Windows, use `py -3` instead of `python3`.
+The Python installer requires **Python 3.11+**. PowerShell users can run `py -3 scripts/install.py --scope global` instead. Both installers deploy the same shared skill and native agents.
 
-## Updating the shared workflow
-
-Rerun the `npx` command to get the current kit. Existing files are not overwritten silently: use `--dry-run` to inspect differences and `--force` to back up and replace installed files when you're ready.
-
-If you maintain the kit, edit canonical files in `agents/`, then regenerate adapters and run tests:
+For kit development, edit canonical roles in `agents/`, not generated adapters. Validate changes with:
 
 ```bash
-python3 scripts/render_adapters.py --write
 python3 scripts/render_adapters.py --check
 python3 -m unittest discover -s tests -v
+npm test
 ```
 
-## Important limitations
+## Limitations
 
-This kit provides **skills and agent definitions**, not a standalone orchestration server. Each coding assistant runs its own native agents; installing the kit does **not** automatically make Codex invoke Claude Code or Cursor. Agent instructions alone do not enforce filesystem permissions (Codex subagents inherit the parent sandbox). For hard isolation or cross-vendor delegation, use a separate orchestrator.
+This kit installs **instructions and agent definitions**, not a standalone execution server. Each assistant delegates to its own native agents; it does not automatically run Claude Code from Codex or vice versa. Agent definitions do **not** guarantee access isolation (Codex subagents inherit their parent's sandbox). A separate orchestrator is needed for enforced permissions, durable traces, or cross-provider delegation.
 
 See [compatibility and permissions](docs/compatibility.md) and the [workflow contract](skills/software-delivery/references/handoffs.md) for details.
