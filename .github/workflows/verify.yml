@@ -16,4 +16,12 @@ jobs:
       - run: python3 scripts/render_adapters.py --check
       - run: python3 -m unittest discover -s tests -v
       - run: npm test
-      - run: npm pack --dry-run
+      - name: Verify npm package contents
+        run: |
+          npm pack --dry-run --json > pack.json
+          node -e "const p=require('./pack.json')[0].files.map(f=>f.path);for(const f of ['bin/engineering-agent-kit.mjs','skills/software-delivery/SKILL.md','adapters/codex/agents/delivery-planner.toml','adapters/claude/agents/delivery-planner.md','adapters/cursor/agents/delivery-planner.md'])if(!p.includes(f))throw Error('Missing '+f)"
+      - name: Smoke test Node-only installer
+        run: |
+          node bin/engineering-agent-kit.mjs --scope global --home "$RUNNER_TEMP/eak-test" --dry-run
+          node bin/engineering-agent-kit.mjs --scope global --home "$RUNNER_TEMP/eak-test"
+          node bin/engineering-agent-kit.mjs --scope global --home "$RUNNER_TEMP/eak-test" --verify

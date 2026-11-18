@@ -22,6 +22,20 @@ npx -y github:craguilar/engineering-agent-kit --scope global --verify
 
 This installs the **skill and five native agents** for Codex, Claude Code, and Cursor. `npx` retrieves the kit from GitHub automatically; you do not need to clone it or install Python.
 
+Preview changes without writing files:
+
+```bash
+npx -y github:craguilar/engineering-agent-kit --scope global --dry-run
+```
+
+**Skill only:** If you do not need the five native subagents, use the Skills CLI instead:
+
+```bash
+npx -y skills add craguilar/engineering-agent-kit --skill software-delivery -a codex -a claude-code -a cursor -g -y
+```
+
+That separate command installs the shared skill, **not** the native agent definitions.
+
 ### 2. Use it in any project
 
 Open your project's directory and **start a new session** with your preferred assistant:
@@ -84,6 +98,7 @@ For **team projects and cloud/CI agents**, install into the current project dire
 ```bash
 cd path/to/your-project
 npx -y github:craguilar/engineering-agent-kit --scope project --project .
+npx -y github:craguilar/engineering-agent-kit --scope project --project . --verify
 ```
 
 Commit the installed `.agents/`, `.codex/`, `.claude/`, and `.cursor/` directories to share the workflow with your team. Existing project instructions (`AGENTS.md` and `CLAUDE.md`) are not changed.
