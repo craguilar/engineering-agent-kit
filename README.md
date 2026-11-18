@@ -1,89 +1,133 @@
 # Engineering Agent Kit
 
-A portable, local-first software-delivery workflow for **Codex CLI, Claude Code, and Cursor**. One canonical set of role instructions is rendered into each tool's native subagent format, and one `software-delivery` skill coordinates the phases.
+**One reusable software-delivery workflow for Codex CLI, Claude Code, and Cursor.**
 
-> **This kit installs instructions and agent definitions, not a long-running workflow engine.** Each coding assistant manages delegation in its own session. For hard-enforced sandbox permissions, deterministic phase gates, durable traces, or cross-vendor execution (e.g. Codex implementation followed by Claude review), add an external orchestrator.
+Install it once to get the `software-delivery` skill **and five specialized agents**. Use them to plan, test, implement, validate, and review changes in your projects.
 
-## What's included
+## Quick start
 
-- Shared Agent Skills-compatible `skills/software-delivery/SKILL.md`.
-- Five roles: `delivery-planner`, `delivery-tech-lead`, `delivery-tester`, `delivery-implementer`, and `delivery-reviewer`.
-- Native agent definitions generated for Codex (`.toml`), Claude Code (`.md`) and Cursor (`.md`).
-- Cross-platform Python installer (`scripts/install.py`) with PowerShell and shell wrappers.
-- Global or per-project installation, idempotency checks, collision protection, dry run, and verification.
-- Offline automated tests and a GitHub Actions check.
+**Requirements:** Python 3.11+, Git, and at least one supported coding assistant (Codex CLI, Claude Code, or Cursor). No Python packages are needed.
 
-## Requirements
+### 1. Get the kit
 
-- Python 3.11+ for the installer and tests (standard library only).
-- Recent versions of Codex CLI, Claude Code, and/or Cursor with subagent support.
-- Git is optional for installation but required for the software-development workflow.
+```bash
+git clone https://github.com/craguilar/engineering-agent-kit.git
+cd engineering-agent-kit
+```
 
-## Install globally (all local projects)
+### 2. Install for all your local projects
 
-From this repository:
+**Windows / PowerShell**
 
 ```powershell
 py -3 scripts/install.py --scope global
 py -3 scripts/install.py --scope global --verify
 ```
 
-On macOS/Linux:
+**macOS / Linux**
 
 ```bash
 python3 scripts/install.py --scope global
 python3 scripts/install.py --scope global --verify
 ```
 
-The installer deploys **both** the skill **and** the agents:
+This installs the shared skill and native agent definitions for **all three tools**. The `--verify` command checks that they were installed correctly.
 
-| Tool | Skill | Agents |
-| --- | --- | --- |
-| Codex | `~/.agents/skills/software-delivery/` | `~/.codex/agents/delivery-*.toml` |
-| Claude Code | `~/.claude/skills/software-delivery/` | `~/.claude/agents/delivery-*.md` |
-| Cursor | `~/.cursor/skills/software-delivery/` | `~/.cursor/agents/delivery-*.md` |
+### 3. Use it in any project
 
-These are native, per-tool locations. The kit does not change existing global CLI settings or grant additional permissions.
+Open your project's folder and start a **new** Codex, Claude Code, or Cursor Agent session.
 
-## Install in a specific project (recommended for teams and cloud agents)
+| Tool | How to start |
+| --- | --- |
+| Codex CLI | Run `codex` in your project |
+| Claude Code | Run `claude` in your project |
+| Cursor | Open the project and start an Agent chat |
+
+Then ask:
+
+```text
+Use the software-delivery skill and its delivery agents to
+implement <your feature or bug fix>.
+
+Plan first, write tests, implement, run validation, and
+perform an independent review. Do not push or merge.
+```
+
+In Claude Code you can also invoke `/software-delivery` directly. In Cursor, use that command if available or mention the skill by name.
+
+## How it works
+
+The coding assistant acts as the **orchestrator** and delegates each phase to a specialized agent.
+
+```mermaid
+flowchart TD
+    U["Your request"] --> S["Software-delivery skill<br/>Orchestrator"]
+    S --> P["1. Planner<br/>Plan and acceptance criteria"]
+    P --> L["2. Tech Lead<br/>Challenge the approach"]
+    L --> T["3. Tester<br/>Write behavioral tests"]
+    T --> I["4. Implementer<br/>Make the tests pass"]
+    I --> V["Run lint, tests, typecheck, build"]
+    V --> R["5. Reviewer<br/>Independent code review"]
+    R --> D{"Blocking findings?"}
+    D -->|No| H["Final report<br/>Human approval"]
+    D -->|Yes| F["Implementer fixes issues"]
+    F --> V
+    D -->|After 2 repair cycles| E["Report unresolved issues"]
+```
+
+The tester and implementer edit files **sequentially**. The planner, tech lead, and reviewer are intended to work without modifying code. The reviewer gets a fresh context. The workflow stops after two repair cycles and never pushes or merges without approval.
+
+## Using it across projects
+
+**Global installation** makes the skill and agents available to all projects on *your machine*:
+
+```mermaid
+flowchart TB
+    K["engineering-agent-kit<br/>Single source of truth"] --> X["Global installer"]
+    X --> C["Codex CLI<br/>Skill + native agents"]
+    X --> A["Claude Code<br/>Skill + native agents"]
+    X --> R["Cursor<br/>Skill + native agents"]
+    C --> P["Any local project"]
+    A --> P
+    R --> P
+```
+
+For **team repositories, CI, or cloud agents**, install into the project instead and commit the generated configuration:
+
+**Windows / PowerShell**
 
 ```powershell
-py -3 scripts/install.py --scope project --project "C:\projects\asset360-app"
-py -3 scripts/install.py --scope project --project "C:\projects\asset360-app" --verify
+py -3 scripts/install.py --scope project --project "C:/projects/my-app"
+py -3 scripts/install.py --scope project --project "C:/projects/my-app" --verify
 ```
 
-On macOS/Linux:
+**macOS / Linux**
 
 ```bash
-python3 scripts/install.py --scope project --project ~/work/asset360-app
+python3 scripts/install.py --scope project --project ~/projects/my-app
+python3 scripts/install.py --scope project --project ~/projects/my-app --verify
 ```
 
-This writes the same files to the repo's `.agents/skills/`, `.claude/`, `.codex/`, and `.cursor/` directories. Commit these project-scoped files in the consuming project if you want every teammate and cloud agent to see them. Project instructions in `AGENTS.md` or `CLAUDE.md` remain owned by that project and are **not** overwritten.
+This writes the skill and agent files into the project's `.agents/`, `.codex/`, `.claude/`, and `.cursor/` folders. It does **not** overwrite the project's `AGENTS.md` or `CLAUDE.md`.
 
-Select a subset: `--agents codex claude` or `--agents cursor`. Use `--dry-run` to preview and `--verify` to compare installed files with the canonical source. Existing different files are never overwritten by default; `--force` backs them up before replacement.
+## Useful commands
 
-## Use it
+Run these from the **engineering-agent-kit** folder:
 
-In your project's CLI/editor, **start a new session** after installation and request:
+| Option | Purpose |
+| --- | --- |
+| `--agents codex` | Install for only Codex (also accepts `claude` and `cursor`) |
+| `--dry-run` | Preview changes without writing files |
+| `--verify` | Check installed files |
+| `--force` | Back up and replace conflicting installed files |
 
-```
-Use the software-delivery skill and its delivery-* agents to implement
-<feature request>. Create acceptance criteria and tests first; use a
-fresh read-only reviewer; run the project's actual validation commands;
-stop after two repair iterations. Do not push or merge.
-```
+For example: `python3 scripts/install.py --scope global --agents codex claude --dry-run`.
 
-For Claude Code, `/software-delivery` explicitly invokes the skill. For Cursor, use `/software-delivery` when available or mention its name. In Codex, ask it to use the `software-delivery` skill and spawn the named agents.
+## Updating the shared workflow
 
-### What happens
+Pull the latest kit and rerun the installer. Existing files are not overwritten silently; use `--dry-run` to inspect differences and `--force` to back up and replace installed files when you're ready.
 
-`request → planner → tech lead challenge → tester → implementer → validation → independent reviewer → bounded repairs → final report`
-
-The tech lead is an architecture/quality challenge role, **not** another agent allowed to edit the implementation. The tester should provide screenshots or reproducible UI evidence when UI behavior is changed and capture tools are available. Only the tester and implementer are intended to modify files, sequentially.
-
-## Maintain one source of truth
-
-Edit `agents/roles.json` and `agents/<role>.md`, **not** the generated adapter files. Then run:
+If you maintain the kit, edit canonical files in `agents/`, then regenerate adapters and run tests:
 
 ```bash
 python3 scripts/render_adapters.py --write
@@ -91,15 +135,8 @@ python3 scripts/render_adapters.py --check
 python3 -m unittest discover -s tests -v
 ```
 
-PRs changing canonical role instructions should regenerate and review all three adapters together. `scripts/install.py` installs from these canonical definitions, and tests verify that the checked-in adapters match.
+## Important limitations
 
-## Security & operational limitations
+This kit provides **skills and agent definitions**, not a standalone orchestration server. Each coding assistant runs its own native agents; installing the kit does **not** automatically make Codex invoke Claude Code or Cursor. Agent instructions alone do not enforce filesystem permissions (Codex subagents inherit the parent sandbox). For hard isolation or cross-vendor delegation, use a separate orchestrator.
 
-- Subagents can be instructed to work read-only, and Claude/Cursor configurations restrict their tools, but these are not a universal isolation boundary. Codex custom agents inherit the parent's sandbox permissions; use isolated processes/worktrees when enforcement is required.
-- The parent must check actual command exit codes and the final diff, rather than trusting agents' claims.
-- Never run multiple write-capable agents against the same worktree concurrently.
-- The installer does **not** execute AI tools, fetch remote content, change `AGENTS.md`, push, open PRs, or manage credentials.
-- Global files are local to the current machine. Remote/cloud agents generally need project-scoped files committed to source control or explicit environment setup.
-- The workflow can collect a final activity summary, but guaranteed tool-by-tool audit logs require an external runtime or hooks.
-
-See [compatibility and permissions](docs/compatibility.md) and [workflow contract](skills/software-delivery/references/handoffs.md).
+See [compatibility and permissions](docs/compatibility.md) and the [workflow contract](skills/software-delivery/references/handoffs.md) for details.
