@@ -1,6 +1,6 @@
 # Thin domain-agent integration profile
 
-The engineering-agent-kit owns reusable **agent plumbing**. Domain repositories own their business logic, data pipelines, deterministic calculations, and domain-specific tools. Do not copy the runtime into each domain repository.
+The engineering-agent-kit owns **reusable specifications, contracts, reference patterns, and implementation guidance only**. Each domain repository owns and implements its own runtime, tool adapters, service logic, storage, and deployment. Do not ship or require a shared runtime package from engineering-agent-kit.
 
 ## Architecture
 
@@ -9,7 +9,7 @@ User / CLI / API / scheduled caller
              |
        Agent transport
              |
- Shared agent runtime (session, model port, loop, guards, approvals, audit)
+ Asterisk-owned runtime (built from kit specification)
              |
      Domain agent definition (prompt, schema, budgets, registry)
              |
@@ -30,13 +30,13 @@ For each domain agent, define:
 - Deterministic pre-pass for calculations, and output validation against the domain engine.
 - Transport for on-demand invocation (CLI or API) and optional scheduled execution; neither transport owns the model loop.
 - Offline fixtures and evaluation cases including stale data, unavailable tools, cross-user access, approval denial, and prompt injection.
-- Clear ownership: runtime changes in engineering-agent-kit; domain implementation and domain-specific agent definition in the domain repo. Version the shared runtime dependency and test compatibility.
+- Clear ownership: generic specification changes in engineering-agent-kit; all runtime code, domain implementation and agent definitions in the domain repo. Pin the kit specification version used for implementation; there is no shared runtime dependency.
 
 A tool adapter should delegate to an existing domain service. It must not reimplement prediction, financial sizing, settlement, or other domain rules in prompts or model-generated code.
 
 ## Example: Asterisk / Kalshi analyst
 
-Asterisk owns market ingestion, match data, probabilistic models, rule evaluation, fees, risk sizing, ledger, and pick cards. The shared runtime supplies the conversational loop, tool registry, sessions, memory, guards, approvals, audit and model adapters.
+Asterisk owns market ingestion, match data, probabilistic models, rule evaluation, fees, risk sizing, ledger, and pick cards. Asterisk implements the conversational loop, tool registry, sessions, memory, guards, approvals, audit and model adapters locally, following the reusable specification from engineering-agent-kit.
 
 Suggested initial **read-only** tool surface:
 - `list_markets(filters)`: current available markets with timestamps and liquidity metadata.
@@ -52,7 +52,7 @@ These are proposed interfaces, not claims of implemented Asterisk endpoints. Eac
 ## Acceptance criteria
 
 1. The Asterisk pipeline and its tests run without the agent runtime or an LLM.
-2. The same agent definition can be invoked on demand through a documented CLI or API using the shared runtime.
+2. The same agent definition can be invoked on demand through a documented CLI or API using its locally implemented runtime based on the kit specification.
 3. The runtime and Asterisk tests use recorded fixtures and fake model responses; no credentials required.
 4. Predictions and sizing are calculated only by Asterisk, with provenance and freshness preserved through tools and answers.
 5. The agent cannot place orders, read another principal's data, or bypass tool guards.
@@ -61,4 +61,4 @@ These are proposed interfaces, not claims of implemented Asterisk endpoints. Eac
 
 ## Implementation order
 
-First build the domain pipeline and read-only service contracts; then instantiate the shared runtime with an Asterisk-specific agent definition and registry; then add an on-demand transport and offline evaluations. Add scheduling only after interactive invocation works. Keep all reusable runtime fixes upstream in engineering-agent-kit.
+First build the domain pipeline and read-only service contracts; then implement the runtime inside Asterisk from the kit specification, then instantiate an Asterisk-specific agent definition and registry; then add an on-demand transport and offline evaluations. Add scheduling only after interactive invocation works. Contribute reusable lessons and contract refinements upstream to engineering-agent-kit as documentation/specifications only, not executable runtime code.
