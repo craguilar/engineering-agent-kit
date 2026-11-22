@@ -103,6 +103,16 @@ npx -y github:craguilar/engineering-agent-kit --scope project --project . --veri
 
 Commit the installed `.agents/`, `.codex/`, `.claude/`, and `.cursor/` directories to share the workflow with your team. Existing project instructions (`AGENTS.md` and `CLAUDE.md`) are not changed.
 
+## Optional: agent runtime skill
+
+The `agent-runtime` skill is a specification for building production LLM tool-calling agents: a bounded loop, tool registry, code-enforced guards, human approval, sessions, memory, quotas, audit, and offline evals. It is provider-neutral, with Bedrock and OpenAI notes. Its [maturity page](skills/agent-runtime/references/maturity.md) shows which parts have been implemented.
+
+The default installer does **not** include it. Install it separately:
+
+```bash
+npx -y skills add craguilar/engineering-agent-kit --skill agent-runtime -a codex -a claude-code -a cursor -g -y
+```
+
 ## Manage the installation
 
 Use the same `npx -y github:craguilar/engineering-agent-kit` prefix with these options:
