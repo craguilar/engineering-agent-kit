@@ -29,6 +29,7 @@ Build agents so that **a new agent is a definition** (prompt, response schema, t
    | Tests and evals | [evals](references/evals.md) |
    | New repository | [greenfield profile](references/greenfield-profile.md) |
    | Existing application | [existing codebase](references/existing-codebase.md) |
+   | Reusable thin domain agent (e.g. Asterisk) | [domain agent integration](references/domain-agent-integration.md) |
    | Bedrock Converse | [Bedrock adapter](references/providers/bedrock-converse.md) |
    | OpenAI Responses | [OpenAI notes](references/providers/openai-responses.md) |
    | What has been proven | [maturity](references/maturity.md) |
